@@ -20,6 +20,8 @@ linternal = LInternal(None, None, None)
 docs = linternal.build_documentation()
 SYSTEM_PROMPT = SYSTEM_PROMPT.replace("[[INTERNAL_DOCS]]", json.dumps(docs, indent=2))
 
+from .voice.kokoro import voice
+
 def parse_llm_output(output):
     soup = BeautifulSoup(output, "html.parser")
     children = soup.find_all(recursive=False)
@@ -61,6 +63,7 @@ class LucySession:
         })
 
         self.API_KEY = settings["groq_api_key"]
+        self.speech_nonce = 0
 
         self.client = OpenAI(
             base_url=self.BASE_URL,
@@ -178,6 +181,7 @@ class LucySession:
                         "type": "assistant",
                         "data": content
                     })
+                    asyncio.create_task(self.speak(content))
                 if tag == "user":
                     continue
                     
@@ -195,6 +199,30 @@ class LucySession:
             temperature=0.0
         )
         return transcription, "incomplete_query"
+    
+    async def speak(self, text):
+        self.is_speaking = True
+        
+        self.speech_nonce += 1
+        this_speech_nonce = self.speech_nonce
+
+        await self.websocket.send_json({
+            "type": "speech_start",
+        })
+
+        for audio_chunk in voice.generate(text):
+            if this_speech_nonce != self.speech_nonce:
+                break
+            await self.websocket.send_json(audio_chunk)
+
+        if this_speech_nonce != self.speech_nonce:
+            return
+        
+        await self.websocket.send_json({
+            "type": "speech_end"
+        })
+
+        self.is_speaking = False
 
     def print_conversation(self):
         print("Conversation:")

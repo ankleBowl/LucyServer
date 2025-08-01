@@ -158,12 +158,13 @@ class LHome(LucyModule):
             data["brightness_pct"] = brightness_pct
         if color_name is not None:
             data["color_name"] = color_name
+
         for device_id in device_ids:
             response = self._trigger(device_id, "turn_on", **data)
         return {"status": "success"}
 
     async def turn_on_lights(self, device_ids: list):
-        """Turns on a list of light devices. You can optionally specify the brightness percentage (0-100) and the color name (e.g., 'red', 'blue')."""
+        """Turns on a list of light devices."""
         for device_id in device_ids:
             response = self._trigger(device_id, "turn_on")
         return {"status": "success"}
