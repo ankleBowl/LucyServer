@@ -29,8 +29,12 @@ class LTime(LucyModule):
     async def get_current_time(self):
         """Gets the current time as a unique time ID"""
         now = datetime.now()
+        pretty_print = now.strftime("%Y-%m-%d %H:%M:%S")
         ms_since_epoch = self._get_ms_since_epoch(now)
-        return f"time:{ms_since_epoch}"
+        return {
+            "time_id": f"time:{ms_since_epoch}",
+            "formatted": pretty_print
+        }
 
     @available_for_lucy
     async def get_specific_time(self, year: int, month: int, day: int, hour: int = 0, minute: int = 0, second: int = 0):
