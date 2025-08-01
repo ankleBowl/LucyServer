@@ -1,10 +1,10 @@
-from tools.lucy_module import LucyModule, available_for_lucy
+from .lucy_module import LucyModule, available_for_lucy
 
-from tools.lspotify import LSpotify
-from tools.ltime import LTime
-from tools.lclock import LClock
-from tools.lhome import LHome
-from tools.linternet import LInternet
+from .lspotify import LSpotify
+from .ltime import LTime
+from .lclock import LClock
+from .lhome import LHome
+from .linternet import LInternet
 # from tools.lappletv import LAppleTV
 
 class LInternal(LucyModule):

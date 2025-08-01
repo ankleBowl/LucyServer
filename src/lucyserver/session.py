@@ -11,9 +11,11 @@ import json
 import os
 import asyncio
 
-SYSTEM_PROMPT = open("prompt.md", "r").read()
+from importlib import resources
+SYSTEM_PROMPT = resources.read_text("lucyserver", "prompt.md")
 
-from tools.linternal import LInternal
+
+from .tools.linternal import LInternal
 linternal = LInternal(None, None, None)
 docs = linternal.build_documentation()
 SYSTEM_PROMPT = SYSTEM_PROMPT.replace("[[INTERNAL_DOCS]]", json.dumps(docs, indent=2))
@@ -39,7 +41,7 @@ def parse_tool_response(result):
         str_result = str(result)
     return str_result
 
-from message import Message
+from .message import Message
 
 class LucySession:
     def __init__(self, user_id, websocket):

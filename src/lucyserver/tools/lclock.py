@@ -1,9 +1,9 @@
-from tools.lucy_module import LucyModule, available_for_lucy
+from .lucy_module import LucyModule, available_for_lucy
 import time
 import asyncio
 import json
 
-from message import Message
+from ..message import Message
 
 class Timer:
 

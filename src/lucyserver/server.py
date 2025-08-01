@@ -3,8 +3,8 @@ from fastapi.responses import StreamingResponse, HTMLResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from pydantic import BaseModel
-from main import LucySession
-from message import Message
+from .session import LucySession
+from .message import Message
 import asyncio
 from importlib import resources
 

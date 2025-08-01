@@ -1,4 +1,4 @@
-from tools.lucy_module import LucyModule, available_for_lucy
+from .lucy_module import LucyModule, available_for_lucy
 
 import requests
 import json

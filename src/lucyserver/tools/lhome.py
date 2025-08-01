@@ -1,7 +1,7 @@
 import requests
 import json
 
-from tools.lucy_module import LucyModule, available_for_lucy
+from .lucy_module import LucyModule, available_for_lucy
 
 # TURNING ON LIGHTS AND SETTING COLOR SHOULD BE DIFFERENT FUNCTIONS
 # REPLACE GET_DEVICE_TYPE WITH GET_DEVICES_IN_ROOM

@@ -1,4 +1,4 @@
-from tools.lucy_module import LucyModule, available_for_lucy
+from .lucy_module import LucyModule, available_for_lucy
 
 # CREATED BY GEMINI BECAUSE I AM SO SICK OF WRITING THE SAME BASIC TOOLS OVER AND OVER AGAIN
 from datetime import datetime, timedelta
