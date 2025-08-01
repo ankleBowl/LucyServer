@@ -1,0 +1,118 @@
+<html>
+    <head>
+        <title>Spotify Web Playback SDK Quick Start</title>
+    </head>
+    <body>
+        <h1>Spotify Web Playback SDK Quick Start</h1>
+    </body>
+    <script src="https://sdk.scdn.co/spotify-player.js"></script>
+    <script>
+        const token = '[[SPOTIFY_TOKEN]]';
+        let player;
+        window.onSpotifyWebPlaybackSDKReady = () => {
+            player = new Spotify.Player({
+                name: 'Lucy',
+                getOAuthToken: cb => { cb(token); },
+                volume: 0.5
+            });
+
+            player.addListener('ready', async ({ device_id }) => {
+                console.log('Ready with Device ID', device_id);
+                await transferPlayback(device_id);
+                window.parent.postMessage({
+                    type: 'set_flag',
+                    data: { 
+                        flag: 'spotify_ready',
+                        value: true
+                    }
+                }, '*');
+                window.parent.postMessage({
+                    type: 'show_music_player',
+                }, '*');
+            });
+
+            player.addListener('not_ready', ({ device_id }) => {
+                console.log('Device ID has gone offline', device_id);
+                window.parent.postMessage({
+                    type: 'set_flag',
+                    data: {
+                        flag: 'spotify_ready',
+                        value: false
+                    }
+                }, '*');
+                window.parent.postMessage({
+                    type: 'hide_music_player',
+                }, '*');
+            });
+
+            player.addListener('player_state_changed', state => {
+                if (!state) return;
+                out = {
+                    "track_title": state.track_window.current_track.name,
+                    "track_artist": state.track_window.current_track.artists.map(artist => artist.name).join(', '),
+                    "track_album": state.track_window.current_track.album.name,
+                    "album_art": state.track_window.current_track.album.images[0].url,
+
+                    "track_duration": state.track_window.current_track.duration_ms,
+                    "track_progress": state.position,
+                    "is_playing": state.paused ? false : true,
+                }
+                window.parent.postMessage({
+                    type: 'music_player_state_changed',
+                    data: out
+                }, '*');
+            });
+
+            window.parent.postMessage({
+                type: 'set_flag',
+                data: {
+                    flag: 'spotify_web_playback_sdk_ready',
+                    value: true
+                }
+            }, '*');
+        }
+
+        const transferPlayback = async (deviceId) => {
+            const url = 'https://api.spotify.com/v1/me/player';
+            const options = {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    device_ids: [deviceId],
+                    play: true
+                })
+            };
+            
+            try {
+                const response = await fetch(url, options);
+                if (response.ok) {
+                    console.log('Playback transferred successfully');
+                } else {
+                    console.log('Error transferring playback:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error transferring playback:', error);
+            }
+        }
+
+        const setVolume = async (volume) => {
+            if (player) {
+                await player.setVolume(volume)
+            } else {
+                console.warn('Spotify player not ready yet.');
+            }
+        }
+
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'connect') {
+                player.connect()
+            } else if (event.data.type === 'set_volume') {
+                const volume = event.data.data.volume;
+                setVolume(volume);
+            }
+        });
+    </script>
+</html>

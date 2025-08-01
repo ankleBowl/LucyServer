@@ -1,0 +1,331 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    
+    <style>
+        @import url("https://use.typekit.net/jmr4hbb.css");
+        
+        :root {
+            --font-family: 'filson-pro', sans-serif;
+            --primary-text-color: #4F4C42;
+            --accent-text-color: #e65e10;
+        }
+
+        body {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #E4E1D7;
+        }
+
+        p {
+            margin: 0;
+        }
+
+        #conversation {
+            position: relative;
+            
+            box-sizing: border-box;
+            padding-top: 100px;
+            padding-bottom: 200px;
+
+            max-width: 800px;
+            width: 95vw;
+
+            height: 100vh;
+            overflow-y: scroll;
+
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .user-message {
+            display: flex;
+            justify-content: flex-end;
+
+            font-family: var(--font-family);
+            font-size: 20px;
+            color: var(--primary-text-color);
+            font-style: italic;
+
+            animation: fadeIn 0.3s ease-in-out;
+            animation-fill-mode: forwards;
+        }
+
+        .lucy-message {
+            display: flex;
+            justify-content: flex-start;
+            flex-direction: column;
+            gap: 10px;
+
+            font-family: var(--font-family);
+            font-size: 20px;
+            color: var(--primary-text-color);
+
+            max-width: 600px;
+
+        }
+
+        .lucy-message .thinking-text {
+            color: var(--primary-text-color);
+            font-size: 16px;
+            font-style: italic;
+            margin-bottom: 10px;
+
+            animation: fadeIn 0.3s ease-in-out;
+            animation-fill-mode: forwards;
+        }
+
+        .lucy-message .tool-call {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--accent-text-color);
+
+            animation: fadeIn 0.3s ease-in-out;
+            animation-fill-mode: forwards;
+            
+        }
+
+        .lucy-message .final-response {
+            margin-top: 10px;
+            font-size: 24px;
+
+            animation: fadeIn 0.3s ease-in-out;
+            animation-fill-mode: forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+    <style>
+        .loader {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: inline-block;
+            position: relative;
+            background: linear-gradient(0deg, #E4E1D7 33%, var(--accent-text-color) 100%);
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+        .loader::after {
+            content: '';  
+            box-sizing: border-box;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #E4E1D7;
+        }
+        @keyframes rotation {
+            0% { transform: rotate(0deg) }
+            100% { transform: rotate(360deg)}
+        } 
+            
+    </style>
+    <style>
+        #user-input-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+
+            /* height: 80px; */
+            height: 100vh;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: linear-gradient(0deg, #E4E1D7 75%, #E4E1D700 100%);
+            transition: height 0.3s ease-in-out;
+
+            z-index: 1;
+        }
+
+        .user-input {
+            max-width: 750px;
+            width: 95vw;
+            height: 50px;
+            background-color: white;
+
+
+            display: flex;
+            flex-direction: row;
+        }
+
+        .user-input input {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            border: none;
+
+            font-family: var(--font-family);
+            font-size: 16px;
+            color: var(--primary-text-color);
+            box-sizing: border-box;
+
+            flex: 1;
+        }
+
+        .inset-box {
+            border-radius: 40px;
+            box-shadow: 0 0 4px 4px rgba(0, 0, 0, 0.2) inset;
+            background: white;
+
+            overflow: hidden;
+        }
+
+        #reset-conv-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin: 10px;
+            border: none;
+            background: var(--accent-text-color);
+        }
+    </style>
+</head>
+<body>
+    <div id="conversation">
+        <div id="user-input-container">
+            <div class="user-input inset-box">
+                <button id="reset-conv-btn"></button>
+                <input id="user-input-elem">
+            </div>
+        </div>
+
+    </div>
+</body>
+<script>
+    const USER_ID = "meewhee";
+
+    let lastAssistantMessage = null;
+    let lastToolCall = null;
+
+    function completeToolCall() {
+        if (lastToolCall) {
+            lastToolCall.querySelector('.loader').innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="-5.0 -10.0 110.0 135.0"><path d="m81.375 26.957c1.2227 1.2227 1.2227 3.1992 0 4.418l-41.668 41.668c-0.60938 0.60938-1.4102 0.91406-2.2109 0.91406-0.80078 0-1.5977-0.30469-2.2109-0.91406l-16.668-16.668c-1.2227-1.2227-1.2227-3.1992 0-4.418 1.2227-1.2227 3.1992-1.2227 4.418 0l14.457 14.457 39.457-39.457c1.2227-1.2227 3.1992-1.2227 4.418 0z"/></svg>`;
+            lastToolCall.querySelector('.loader').classList.remove('loader');
+            lastToolCall = null;
+        }
+    }
+
+    function addUserMessage(message) {
+        const userMessage = document.createElement('div');
+        userMessage.className = 'user-message';
+        userMessage.innerHTML = `<p>${message}</p>`;
+        document.getElementById('conversation').appendChild(userMessage);
+    }
+
+    function addAssistantMessage() {
+        const assistantMessage = document.createElement('div');
+        assistantMessage.className = 'lucy-message';
+        assistantMessage.innerHTML = `
+            <p class="thinking-text">Thinking...</p>
+        `
+        document.getElementById('conversation').appendChild(assistantMessage);
+        lastAssistantMessage = assistantMessage;
+    }
+
+    function addAssistantToolCall(toolName) {
+        const toolCall = document.createElement('div');
+        toolCall.className = 'tool-call';
+        toolCall.innerHTML = `
+            <span style="width: 24px; height: 24px;" class="loader"></span>
+            <p>${toolName}</p>
+        `;
+        lastAssistantMessage.appendChild(toolCall);
+        completeToolCall();
+        lastToolCall = toolCall;
+
+    }
+
+    function addAssistantFinalResponse(response) {
+        const finalResponse = document.createElement('p');
+        finalResponse.className = 'final-response';
+        finalResponse.textContent = response;
+        lastAssistantMessage.appendChild(finalResponse);
+        completeToolCall();
+    }
+
+    document.getElementById('user-input-elem').addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            const message = this.value.trim();
+            if (message) {
+                this.value = '';
+                handleRequest(message);
+            }
+        }
+    });
+
+    document.getElementById('reset-conv-btn').addEventListener('click', function() {
+        console.log('Resetting conversation');
+        clearConversation();
+    });
+
+    const socket = new WebSocket('ws://localhost:8000/v1/ws/' + USER_ID);
+    socket.onopen = (event) => {
+        socket.send(JSON.stringify({type: 'auth'}));
+    };
+    socket.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        console.log(msg);
+
+        if (msg.type === 'assistant') {
+            addAssistantFinalResponse(msg.data);
+        } else if (msg.type === 'tool') {
+            let toolName = msg.data.module + '.' + msg.data.function;
+            addAssistantToolCall(toolName);
+        } else if (msg.type === 'end') {
+            completeToolCall();
+        }
+    };
+
+    function clearConversation() {
+        const conversation = document.getElementById('conversation');
+        const userMessages = conversation.querySelectorAll('.user-message');
+        const lucyMessages = conversation.querySelectorAll('.lucy-message');
+        userMessages.forEach(msg => msg.remove());
+        lucyMessages.forEach(msg => msg.remove());
+        lastAssistantMessage = null;
+        lastToolCall = null;
+
+        document.getElementById("user-input-container").style.height = "100vh";
+
+        socket.send(JSON.stringify({type: 'clear'}));
+    }
+
+    function handleRequest(message) {
+        addUserMessage(message);
+        addAssistantMessage();
+        document.getElementById("user-input-container").style.height = "80px";
+
+        socket.send(JSON.stringify({
+            type: 'request',
+            message: message
+        }));
+    }
+
+
+</script>
+</html>
