@@ -1,0 +1,25 @@
+[project]
+name = "lucyserver"
+version = "0.0.1"
+description = "Lucy Server - A server for the Lucy AI assistant"
+dependencies = [
+    "beautifulsoup4==4.13.4",
+    "fastapi",
+    "fuzzywuzzy==0.18.0",
+    "numpy==2.3.2",
+    "openai==1.98.0",
+    "pydantic==2.11.7",
+    "requests",
+    "scipy==1.16.1",
+    "spotipy==2.25.1",
+    "uvicorn",
+]
+requires-python = ">=3.10"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.package-data]
+"lucyserver.tools" = ["*.html"]
+"lucyserver" = ["*.html", "*.md"]
