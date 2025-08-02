@@ -453,7 +453,7 @@ class LSpotify(LucyModule):
 
     def get_web_preview(self, path=None, args={}):
         if path == "web_player":
-            html_path = resources.files("lucyserver").joinpath("lspotify.html")
+            html_path = resources.files("lucyserver.tools").joinpath("lspotify.html")
 
             html = open(html_path, "r").read()
             html = html.replace("[[SPOTIFY_TOKEN]]", self.tokens["access_token"])
