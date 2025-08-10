@@ -13,6 +13,7 @@ class KokoroVoice:
         self.pipeline = KPipeline(lang_code='a', repo_id='hexgrad/Kokoro-82M')
 
     def generate(self, text):
+        yield {"type": "speech_sr", "sr": 24000}
         generator = self.pipeline(text, voice='af_bella')
         for i, (gs, ps, audio) in enumerate(generator):
             audio = np.array(audio)
