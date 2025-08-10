@@ -20,8 +20,8 @@ linternal = LInternal(None, None, None)
 docs = linternal.build_documentation()
 SYSTEM_PROMPT = SYSTEM_PROMPT.replace("[[INTERNAL_DOCS]]", json.dumps(docs, indent=2))
 
-# from .voice.kokoro import voice
-from .voice.elevenlabs import voice
+from .voice.kokoro import voice
+# from .voice.elevenlabs import voice
 
 def parse_llm_output(output):
     soup = BeautifulSoup(output, "html.parser")
